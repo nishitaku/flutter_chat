@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_chat/pages/chat_page.dart';
 
 class LoginPage extends StatelessWidget {
 
@@ -13,7 +14,12 @@ class LoginPage extends StatelessWidget {
               child: const Text('ログイン'),
               onPressed: () async {
                 // チャット画面に繊維+ログイン画面を破棄
-            }), 
+                await Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (context) {
+                    return ChatPage();
+                  })
+                );
+            }),
           ],
       ),),
     );
