@@ -6,7 +6,7 @@ import 'package:flutter_chat/pages/login_page.dart';
 class ChatPage extends StatelessWidget {
   ChatPage(this.user);
   final User user;
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -16,6 +16,8 @@ class ChatPage extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.close),
             onPressed: () async {
+              // ログアウト処理
+              await FirebaseAuth.instance.signOut();
               // ログイン画面に遷移+チャット画面を破棄
               await Navigator.of(context).pushReplacement(
                 MaterialPageRoute(builder: (context) {
