@@ -51,14 +51,14 @@ class _LoginPageState extends State<LoginPage> {
                   onPressed: () async {
                     try {
                       final FirebaseAuth auth = FirebaseAuth.instance;
-                      await auth.createUserWithEmailAndPassword(
+                      final result = await auth.createUserWithEmailAndPassword(
                         email: email,
                         password: password,
                       );
                       // ユーザー登録に成功した場合、チャット画面に遷移+ログイン画面を破棄
                       await Navigator.of(context).pushReplacement(
                         MaterialPageRoute(builder: (context) {
-                          return ChatPage();
+                          return ChatPage(result.user!);
                         }),
                       );
                     } catch (e) {
@@ -78,14 +78,14 @@ class _LoginPageState extends State<LoginPage> {
                   onPressed: () async {
                     try {
                       final FirebaseAuth auth = FirebaseAuth.instance;
-                      await auth.signInWithEmailAndPassword(
+                      final result = await auth.signInWithEmailAndPassword(
                         email: email,
                         password: password,
                       );
                       // ログインに成功した場合、チャット画面に遷移+ログイン画面を破棄
                       await Navigator.of(context).pushReplacement(
                         MaterialPageRoute(builder: (context) {
-                          return ChatPage();
+                          return ChatPage(result.user!);
                         }),
                       );
                     } catch (e) {

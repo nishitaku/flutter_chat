@@ -1,8 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/pages/add_post_page.dart';
 import 'package:flutter_chat/pages/login_page.dart';
 
 class ChatPage extends StatelessWidget {
+  ChatPage(this.user);
+  final User user;
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,6 +25,9 @@ class ChatPage extends StatelessWidget {
             },
           )
         ],
+      ),
+      body: Center(
+        child: Text('ログイン情報:${user.email}'),
       ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
