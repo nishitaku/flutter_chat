@@ -3,13 +3,19 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/pages/add_post_page.dart';
 import 'package:flutter_chat/pages/login_page.dart';
+import 'package:provider/provider.dart';
+
+import '../main.dart';
 
 class ChatPage extends StatelessWidget {
-  ChatPage(this.user);
-  final User user;
+  ChatPage();
 
   @override
   Widget build(BuildContext context) {
+    // ユーザー情報を受け取る
+    final UserState userState = Provider.of<UserState>(context);
+    final User user = userState.user!;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('チャット'),
@@ -20,11 +26,10 @@ class ChatPage extends StatelessWidget {
               // ログアウト処理
               await FirebaseAuth.instance.signOut();
               // ログイン画面に遷移+チャット画面を破棄
-              await Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (context) {
-                  return LoginPage();
-                })
-              );
+              await Navigator.of(context)
+                  .pushReplacement(MaterialPageRoute(builder: (context) {
+                return LoginPage();
+              }));
             },
           )
         ],
@@ -42,34 +47,33 @@ class ChatPage extends StatelessWidget {
               // 投稿メッセージ一覧を取得(非同期処理)
               // 投稿日時でソート
               stream: FirebaseFirestore.instance
-                .collection('posts')
-                .orderBy('date')
-                .snapshots(),
+                  .collection('posts')
+                  .orderBy('date')
+                  .snapshots(),
               builder: (context, snapshot) {
                 // データが取得できた場合
-                if(snapshot.hasData) {
+                if (snapshot.hasData) {
                   final List<DocumentSnapshot> documents = snapshot.data!.docs;
                   //　取得して投稿メッセージ一覧を元にリスト表示
                   return ListView(
                     children: documents.map((document) {
                       return Card(
                         child: ListTile(
-                          title: Text(document['text']),
-                          subtitle: Text(document['email']),
-                          // 自分の投稿メッセージの場合は削除ボタンを表示
-                          trailing: document['email'] == user.email
-                            ? IconButton(
-                              icon: const Icon(Icons.delete),
-                              onPressed: () async {
-                                // 投稿メッセージのドキュメントを削除
-                                await FirebaseFirestore.instance
-                                  .collection('posts')
-                                  .doc(document.id)
-                                  .delete();
-                              },
-                            )
-                          : null
-                        ),
+                            title: Text(document['text']),
+                            subtitle: Text(document['email']),
+                            // 自分の投稿メッセージの場合は削除ボタンを表示
+                            trailing: document['email'] == user.email
+                                ? IconButton(
+                                    icon: const Icon(Icons.delete),
+                                    onPressed: () async {
+                                      // 投稿メッセージのドキュメントを削除
+                                      await FirebaseFirestore.instance
+                                          .collection('posts')
+                                          .doc(document.id)
+                                          .delete();
+                                    },
+                                  )
+                                : null),
                       );
                     }).toList(),
                   );
@@ -89,7 +93,7 @@ class ChatPage extends StatelessWidget {
           // 投稿画面に遷移
           await Navigator.of(context).push(
             MaterialPageRoute(builder: (context) {
-              return AddPostPage(user);
+              return AddPostPage();
             }),
           );
         },

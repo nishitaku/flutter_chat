@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
+
+import '../main.dart';
 
 class AddPostPage extends StatefulWidget {
   // 引数からユーザー情報を受け取る
-  AddPostPage(this.user);
-  // ユーザー情報
-  final User user;
+  AddPostPage();
 
   @override
   _AddPostPageState createState() => _AddPostPageState();
@@ -18,6 +19,10 @@ class _AddPostPageState extends State<AddPostPage> {
 
   @override
   Widget build(BuildContext context) {
+    // ユーザー情報を受け取る
+    final UserState userState = Provider.of<UserState>(context);
+    final User user = userState.user!;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('チャット投稿'),
@@ -50,7 +55,7 @@ class _AddPostPageState extends State<AddPostPage> {
                     // 現在の日時
                     final date = DateTime.now().toLocal().toIso8601String();
                     // AddPostPageのデータを参照
-                    final email = widget.user.email;
+                    final email = user.email;
                     // 投稿メッセージ用ドキュメント作成
                     await FirebaseFirestore.instance.collection('posts').doc().set({
                       'text': messageText,
