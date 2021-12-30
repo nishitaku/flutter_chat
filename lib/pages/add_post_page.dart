@@ -1,27 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_chat/main.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../main.dart';
-
-class AddPostPage extends StatefulWidget {
-  // 引数からユーザー情報を受け取る
-  AddPostPage();
-
+class AddPostPage extends ConsumerWidget {
   @override
-  _AddPostPageState createState() => _AddPostPageState();
-}
-
-class _AddPostPageState extends State<AddPostPage> {
-  // 入力した投稿メッセージ
-  String messageText = '';
-
-  @override
-  Widget build(BuildContext context) {
-    // ユーザー情報を受け取る
-    final UserState userState = Provider.of<UserState>(context);
-    final User user = userState.user!;
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Providerから値を受け取る
+    final user = ref.watch(userProvider);
+    final messageText = ref.watch(messageTextProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -41,9 +28,8 @@ class _AddPostPageState extends State<AddPostPage> {
                 // 最大3行
                 maxLines: 3,
                 onChanged: (String value) {
-                  setState(() {
-                    messageText = value;
-                  });
+                  // Providerから値を更新
+                  ref.read(messageTextProvider.notifier).state = value;
                 },
               ),
               const SizedBox(height: 8,),
@@ -55,7 +41,7 @@ class _AddPostPageState extends State<AddPostPage> {
                     // 現在の日時
                     final date = DateTime.now().toLocal().toIso8601String();
                     // AddPostPageのデータを参照
-                    final email = user.email;
+                    final email = user!.email;
                     // 投稿メッセージ用ドキュメント作成
                     await FirebaseFirestore.instance.collection('posts').doc().set({
                       'text': messageText,

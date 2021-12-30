@@ -2,24 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_chat/main.dart';
 import 'package:flutter_chat/pages/chat_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class LoginPage extends StatefulWidget {
-  LoginPage({Key? key}) : super(key: key);
-
+// ConsumerWidgetでProviderから値を受け渡す
+class LoginPage extends ConsumerWidget {
   @override
-  _LoginPageState createState() => _LoginPageState();
-}
-
-class _LoginPageState extends State<LoginPage> {
-  String infoText = '';
-  String email = '';
-  String password = '';
-
-  @override
-  Widget build(BuildContext context) {
-    // ユーザー情報を受け取る
-    final UserState userState = Provider.of<UserState>(context);
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Providerから値を受け取る
+    final infoText = ref.watch(infoTextProvider);
+    final email = ref.watch(emailProvider);
+    final password = ref.watch(passwordProvider);
 
     return Scaffold(
       body: Center(
@@ -31,18 +23,16 @@ class _LoginPageState extends State<LoginPage> {
               TextFormField(
                 decoration: const InputDecoration(labelText: 'メールアドレス'),
                 onChanged: (String value) {
-                  setState(() {
-                    email = value;
-                  });
+                  // Providerから値を更新
+                  ref.read(emailProvider.notifier).state = value;
                 },
               ),
               TextFormField(
                 decoration: const InputDecoration(labelText: 'パスワード'),
                 obscureText: true,
                 onChanged: (String value) {
-                  setState(() {
-                    password = value;
-                  });
+                  // Providerから値を更新
+                  ref.read(passwordProvider.notifier).state = value;
                 },
               ),
               Container(
@@ -61,7 +51,8 @@ class _LoginPageState extends State<LoginPage> {
                         password: password,
                       );
                       // ユーザー情報を更新
-                      userState.setUser(result.user!);
+                      ref.read(userProvider.notifier).state = result.user!;
+
                       // ユーザー登録に成功した場合、チャット画面に遷移+ログイン画面を破棄
                       await Navigator.of(context).pushReplacement(
                         MaterialPageRoute(builder: (context) {
@@ -70,9 +61,7 @@ class _LoginPageState extends State<LoginPage> {
                       );
                     } catch (e) {
                       // ユーザー登録に失敗した場合
-                      setState(() {
-                        infoText = "登録に失敗しました:${e.toString()}";
-                      });
+                      ref.read(infoTextProvider.notifier).state = "登録に失敗しました:${e.toString()}";
                     }
                   },
                 ),
@@ -89,8 +78,6 @@ class _LoginPageState extends State<LoginPage> {
                         email: email,
                         password: password,
                       );
-                      // ユーザー情報を更新
-                      userState.setUser(result.user!);
                       // ログインに成功した場合、チャット画面に遷移+ログイン画面を破棄
                       await Navigator.of(context).pushReplacement(
                         MaterialPageRoute(builder: (context) {
@@ -99,9 +86,7 @@ class _LoginPageState extends State<LoginPage> {
                       );
                     } catch (e) {
                       // ユーザー登録に失敗した場合
-                      setState(() {
-                        infoText = "ログインに失敗しました:${e.toString()}";
-                      });
+                      ref.read(infoTextProvider.notifier).state = "ログインに失敗しました:${e.toString()}";
                     }
                   },
                 ),

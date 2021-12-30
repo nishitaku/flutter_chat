@@ -1,20 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_chat/main.dart';
 import 'package:flutter_chat/pages/add_post_page.dart';
 import 'package:flutter_chat/pages/login_page.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../main.dart';
-
-class ChatPage extends StatelessWidget {
-  ChatPage();
-
+class ChatPage extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
-    // ユーザー情報を受け取る
-    final UserState userState = Provider.of<UserState>(context);
-    final User user = userState.user!;
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Providerから値を受け取る
+    final user = ref.watch(userProvider);
+    final AsyncValue<QuerySnapshot> asyncPostsQuery =
+        ref.watch(postsQueryProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -38,26 +36,15 @@ class ChatPage extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            child: Text('ログイン情報:${user.email}'),
+            child: Text('ログイン情報:${user!.email}'),
           ),
           Expanded(
-            // StreamBuilder
-            // 非同期処理の結果を元にWidgetを作れる
-            child: StreamBuilder<QuerySnapshot>(
-              // 投稿メッセージ一覧を取得(非同期処理)
-              // 投稿日時でソート
-              stream: FirebaseFirestore.instance
-                  .collection('posts')
-                  .orderBy('date')
-                  .snapshots(),
-              builder: (context, snapshot) {
-                // データが取得できた場合
-                if (snapshot.hasData) {
-                  final List<DocumentSnapshot> documents = snapshot.data!.docs;
-                  //　取得して投稿メッセージ一覧を元にリスト表示
-                  return ListView(
-                    children: documents.map((document) {
-                      return Card(
+            // StreamProviderから受け取った値は、.when()で状態に応じて出し分け
+            child: asyncPostsQuery.when(
+              data: (QuerySnapshot query) {
+                return ListView(
+                  children: query.docs.map((document) {
+                    return Card(
                         child: ListTile(
                             title: Text(document['text']),
                             subtitle: Text(document['email']),
@@ -74,17 +61,24 @@ class ChatPage extends StatelessWidget {
                                     },
                                   )
                                 : null),
-                      );
-                    }).toList(),
-                  );
-                }
-                // データが読込中の場合
+                    );
+                  }).toList(),
+                );
+              },
+              // 値の取得に失敗したとき
+              error: (e, statckTrace) {
+                return Center(
+                  child: Text(e.toString()),
+                );
+              },
+              // 値が読込中のとき
+              loading: () {
                 return const Center(
                   child: Text('読込中...'),
                 );
               },
             ),
-          )
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
